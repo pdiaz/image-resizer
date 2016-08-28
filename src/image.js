@@ -25,7 +25,8 @@ ErrorStream.prototype._read = function(){
 };
 
 
-function Image(request){
+function Image(request, path){
+  path = !_.isUndefined(path) ? path : request.path;
   // placeholder for any error objects
   this.error = null;
 
@@ -36,10 +37,10 @@ function Image(request){
   this.parseImage(request);
 
   // determine the requested modifications
-  this.modifiers = modifiers.parse(request.path);
+  this.modifiers = modifiers.parse(path);
 
   // pull the various parts needed from the request params
-  this.parseUrl(request);
+  this.parseUrl({path: path});
 
   // placeholder for the buffer/stream coming from s3, will hold the image
   this.contents = null;
