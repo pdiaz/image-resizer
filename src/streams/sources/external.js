@@ -2,8 +2,9 @@
 
 'use strict';
 
-var string, stream, util, request;
+var env, string, stream, util, request;
 
+env     = require('../../config/environment_vars');
 string  = require('../../utils/string');
 stream  = require('stream');
 util    = require('util');
@@ -17,6 +18,9 @@ function contentLength(bufs){
 
 function External(image, key, prefix){
   var regexMatch;
+
+  key = key || "external";
+  prefix = prefix || env.externalSources.default;
 
   /* jshint validthis:true */
   if (!(this instanceof External)){
@@ -64,6 +68,7 @@ External.prototype._read = function(){
   }
 
   this.image.log.time('source:' + this.key);
+  console.log('url: ' + url);
 
   imgStream = request.get(url);
   imgStream.on('data', function(d){ bufs.push(d); });
