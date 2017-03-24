@@ -335,7 +335,7 @@ exports.parse = function(requestUrl, namedMods, envOverride){
   // check the request for available modifiers, unless we are restricting to
   // only named modifiers.
   if (!env.NAMED_MODIFIERS_ONLY) {
-    mods = parseModifiers(mods, modStr.split('-'));
+    mods = parseModifiers(mods, modStr.split(/[^a-z0-9]+/ig));
   }
 
 

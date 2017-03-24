@@ -89,6 +89,18 @@ describe('Modifiers module', function(){
       localEnv.MAX_IMAGE_DIMENSION = '700';
       mod.parse(request, undefined, localEnv).width.should.equal(600);
     });
+    it('should set the width to original parameter width if less than the MAX_IMAGE_DIMENSION', function(){
+      var request = '/w600,h400,gse/path/to/image.jpg';
+      var localEnv = _.clone(env);
+      localEnv.MAX_IMAGE_DIMENSION = '700';
+      mod.parse(request, undefined, localEnv).width.should.equal(600);
+    });
+    it('Testing commas as separators MAX_IMAGE_DIMENSION', function(){
+      var request = '/w600,h400,gse/path/to/image.jpg';
+      var localEnv = _.clone(env);
+      localEnv.MAX_IMAGE_DIMENSION = '700';
+      mod.parse(request, undefined, localEnv).width.should.equal(600);
+    });
   });
 
 

@@ -58,61 +58,31 @@ module.exports = function () {
       r.withMetadata();
     }
 
-    var d, wd, ht;
+    try {
+      var d, wd, ht;
 
-    switch(image.modifiers.action){
-    case 'original' :
-      r.toBuffer(resizeResponse);
-      break;
-
-    case 'resize':
-      r.resize(image.modifiers.width, image.modifiers.height);
-      r.max();
-      r.toBuffer(resizeResponse);
-      break;
-
-    case 'square':
-      r.metadata(function(err, metadata){
-        if (err){
-          image.error = new Error(err);
-          callback(null, image);
-          return;
-        }
-
-        d = dims.cropFill(image.modifiers, metadata);
-
-        // resize then crop the image
-        r.resize(
-            d.resize.width,
-            d.resize.height
-          ).extract({
-            left: d.crop.x,
-            top: d.crop.y,
-            width: d.crop.width,
-            height: d.crop.height
-          });
-
+      switch(image.modifiers.action){
+      case 'original' :
         r.toBuffer(resizeResponse);
-      });
+        break;
 
-      break;
+      case 'resize':
+        r.resize(image.modifiers.width, image.modifiers.height);
+        r.max();
+        r.toBuffer(resizeResponse);
+        break;
 
-    case 'crop':
-      r.metadata(function(err, size){
-        if (err){
-          image.error = new Error(err);
-          callback(null, image);
-          return;
-        }
+      case 'square':
+        r.metadata(function(err, metadata){
+          if (err){
+            image.error = new Error(err);
+            callback(null, image);
+            return;
+          }
 
-        switch(image.modifiers.crop){
-        case 'fit':
-          r.resize(image.modifiers.width, image.modifiers.height);
-          r.max();
-          break;
-        case 'fill':
-          d = dims.cropFill(image.modifiers, size);
+          d = dims.cropFill(image.modifiers, metadata);
 
+          // resize then crop the image
           r.resize(
               d.resize.width,
               d.resize.height
@@ -122,40 +92,74 @@ module.exports = function () {
               width: d.crop.width,
               height: d.crop.height
             });
-          break;
-        case 'cut':
-          wd = image.modifiers.width || image.modifiers.height;
-          ht = image.modifiers.height || image.modifiers.width;
 
-          d = dims.gravity(
-            image.modifiers.gravity,
-            size.width,
-            size.height,
-            wd,
-            ht
-          );
-          r.extract({
-            left: d.x,
-            top: d.y,
-            width: wd,
-            height: ht
-          });
-          break;
-        case 'scale':
-          r.resize(image.modifiers.width, image.modifiers.height);
-          r.ignoreAspectRatio();
-          break;
-        case 'pad':
-          r.resize(
-            image.modifiers.width,
-            image.modifiers.height
-          ).background(env.IMAGE_PADDING_COLOR || 'white').embed();
-        }
+          r.toBuffer(resizeResponse);
+        });
 
-        r.toBuffer(resizeResponse);
-      });
+        break;
 
-      break;
+      case 'crop':
+        r.metadata(function(err, size){
+          if (err){
+            image.error = new Error(err);
+            callback(null, image);
+            return;
+          }
+
+          switch(image.modifiers.crop){
+          case 'fit':
+            r.resize(image.modifiers.width, image.modifiers.height);
+            r.max();
+            break;
+          case 'fill':
+            d = dims.cropFill(image.modifiers, size);
+
+            r.resize(
+                d.resize.width,
+                d.resize.height
+              ).extract({
+                left: d.crop.x,
+                top: d.crop.y,
+                width: d.crop.width,
+                height: d.crop.height
+              });
+            break;
+          case 'cut':
+            wd = image.modifiers.width || image.modifiers.height;
+            ht = image.modifiers.height || image.modifiers.width;
+
+            d = dims.gravity(
+              image.modifiers.gravity,
+              size.width,
+              size.height,
+              wd,
+              ht
+            );
+            r.extract({
+              left: d.x,
+              top: d.y,
+              width: wd,
+              height: ht
+            });
+            break;
+          case 'scale':
+            r.resize(image.modifiers.width, image.modifiers.height);
+            r.ignoreAspectRatio();
+            break;
+          case 'pad':
+            r.resize(
+              image.modifiers.width,
+              image.modifiers.height
+            ).background(env.IMAGE_PADDING_COLOR || 'white').embed();
+          }
+
+          r.toBuffer(resizeResponse);
+        });
+
+        break;
+      }
+    } catch(error) {
+      return callback(error, null);
     }
   });
 
