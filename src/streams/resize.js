@@ -80,20 +80,26 @@ module.exports = function () {
             return;
           }
 
-          d = dims.cropFill(image.modifiers, metadata);
+          try {
+            d = dims.cropFill(image.modifiers, metadata);
 
-          // resize then crop the image
-          r.resize(
-              d.resize.width,
-              d.resize.height
-            ).extract({
-              left: d.crop.x,
-              top: d.crop.y,
-              width: d.crop.width,
-              height: d.crop.height
-            });
+            // resize then crop the image
+            r.resize(
+                d.resize.width,
+                d.resize.height
+              ).extract({
+                left: d.crop.x,
+                top: d.crop.y,
+                width: d.crop.width,
+                height: d.crop.height
+              });
 
-          r.toBuffer(resizeResponse);
+            r.toBuffer(resizeResponse);
+          } catch(err) {
+            image.error = new Error(err);
+            callback(null, image);
+            return;
+          }
         });
 
         break;
@@ -108,43 +114,67 @@ module.exports = function () {
 
           switch(image.modifiers.crop){
           case 'fit':
-            r.resize(image.modifiers.width, image.modifiers.height);
-            r.max();
+            try {
+              r.resize(image.modifiers.width, image.modifiers.height);
+              r.max();
+            } catch(err) {
+              image.error = new Error(err);
+              callback(null, image);
+              return;
+            }
             break;
           case 'fill':
             d = dims.cropFill(image.modifiers, size);
 
-            r.resize(
-                d.resize.width,
-                d.resize.height
-              ).extract({
-                left: d.crop.x,
-                top: d.crop.y,
-                width: d.crop.width,
-                height: d.crop.height
-              });
+            try {
+              r.resize(
+                  d.resize.width,
+                  d.resize.height
+                ).extract({
+                  left: d.crop.x,
+                  top: d.crop.y,
+                  width: d.crop.width,
+                  height: d.crop.height
+                });
+            } catch(err) {
+              image.error = new Error(err);
+              callback(null, image);
+              return;
+            }
             break;
           case 'cut':
             wd = image.modifiers.width || image.modifiers.height;
             ht = image.modifiers.height || image.modifiers.width;
 
-            d = dims.gravity(
-              image.modifiers.gravity,
-              size.width,
-              size.height,
-              wd,
-              ht
-            );
-            r.extract({
-              left: d.x,
-              top: d.y,
-              width: wd,
-              height: ht
-            });
+            try {
+              d = dims.gravity(
+                image.modifiers.gravity,
+                size.width,
+                size.height,
+                wd,
+                ht
+              );
+              r.extract({
+                left: d.x,
+                top: d.y,
+                width: wd,
+                height: ht
+              });
+            } catch(err) {
+              image.error = new Error(err);
+              callback(null, image);
+              return;
+            }
             break;
           case 'scale':
-            r.resize(image.modifiers.width, image.modifiers.height);
-            r.ignoreAspectRatio();
+            try {
+              r.resize(image.modifiers.width, image.modifiers.height);
+              r.ignoreAspectRatio();
+            } catch(err) {
+              image.error = new Error(err);
+              callback(null, image);
+              return;
+            }
             break;
           case 'pad':
             r.resize(
@@ -158,8 +188,10 @@ module.exports = function () {
 
         break;
       }
-    } catch(error) {
-      return callback(error, null);
+    } catch(err) {
+      image.error = new Error(err);
+      callback(null, image);
+      return;
     }
   });
 
