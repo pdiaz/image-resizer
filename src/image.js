@@ -61,8 +61,8 @@ Image.validOutputFormats = ['jpeg', 'png', 'webp'];
 // Determine the name and format of the requested image
 Image.prototype.parseImage = function(request){
   var fileStr = _.last(request.path.split('/'));
-  var exts = fileStr.split('.').map( function (item) {
-    return item.toLowerCase();
+  var exts = fileStr.split('.').map( function (item, index, array) {
+    return (array.length - 1 === index)? item.toLowerCase() : item;
   });
 
   // clean out any metadata format
